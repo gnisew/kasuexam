@@ -1,0 +1,20 @@
+/* 內嵌字體 */
+
+@font-face{
+    font-family: 'twhei-s';
+	src: local("twhei-s-Regular"),
+	 url( 'twhei-s.woff2' ) format("woff2"),
+	 url( 'twhei-s.woff' ) format("woff"),
+	 url( 'twhei-s.otf' ) format("opentype");
+}
+
+@font-face{
+    font-family: 'TWHEI';
+	src: local("TWHEI"),
+		local("台灣黑體"),
+	 url( 'TWHEI.woff2' ) format("woff2"),
+	 url( 'TWHEI.woff' ) format("woff"),
+	 url( 'TWHEI.otf' ) format("opentype");
+  font-display: swap;
+}
+* {font-family:  twhei-s,TWHEI, "台灣黑體", tauhu-oo, PingFangTC-Regular, "Microsoft JhengHei", sans-serif;}
