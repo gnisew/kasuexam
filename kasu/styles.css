@@ -168,6 +168,7 @@ button:disabled {
 
 #question-container {
     margin-bottom: 20px;
+	font-size: 18px; !important;
 }
 
 .question-text-container {
@@ -199,6 +200,7 @@ button:disabled {
     border: 1px solid #ddd;
     border-radius: 4px;
     cursor: pointer;
+	font-size: 18px; !important;
 }
 
 .grid-options {
@@ -337,7 +339,7 @@ img {
 }
 
 #start-again-button {
-    font-size: 14px;
+    font-size: 18px;
     cursor: pointer;
     margin-right: 5px;
     padding: 5px;
@@ -776,6 +778,7 @@ select:hover {
 .sorting-container {
     align-items: center;
     margin-top: 20px;
+	font-size: 18px; !important;
 }
 
 .word-bank, .answer-area {
@@ -877,6 +880,7 @@ select:hover {
     display: flex;
 	justify-content: space-between;
     margin-top: 20px;
+	font-size: 18px; !important;
 }
 
 .matching-left, .matching-right {
@@ -936,6 +940,7 @@ select:hover {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  font-size: 18px; !important;
 }
 
 .arranging-items, .arranging-dropzone {
@@ -1004,6 +1009,7 @@ select:hover {
   margin-top: 20px;
   flex-direction: column;
   width: 100%;
+  font-size: 18px; !important;
 }
 
 .group {

@@ -1282,6 +1282,19 @@ function updateQuestionStats(questionId, isCorrect) {
     logQuestionStats();
 }
 
+// 全螢幕模式函數
+function enterFullscreen(element) {
+    if(element.requestFullscreen) {
+        element.requestFullscreen();
+    } else if(element.mozRequestFullScreen) { // Firefox
+        element.mozRequestFullScreen();
+    } else if(element.webkitRequestFullscreen) { // Chrome, Safari 和 Opera
+        element.webkitRequestFullscreen();
+    } else if(element.msRequestFullscreen) { // IE/Edge
+        element.msRequestFullscreen();
+    }
+}
+
 startButton.addEventListener('click', () => {
     const selectedType = questionType.value;
     const selectedOrder = orderType.value;
@@ -1291,6 +1304,9 @@ startButton.addEventListener('click', () => {
         alert('請選擇題型後再開始測驗！');
         return;
     }
+
+    // 進入全螢幕模式
+    enterFullscreen(document.documentElement);
 
     filteredQuestions = [];
     if (selectedType === 'mock') {
@@ -1357,8 +1373,33 @@ function startGetRandomQuestions(arr, n = arr.length) {
 }
 
 
+// 監聽全螢幕變化事件
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
+// 處理全螢幕變化
+function handleFullscreenChange() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement &&
+        !document.mozFullScreenElement && !document.msFullscreenElement) {
+        // 退出全螢幕時的處理邏輯
+        console.log('退出全螢幕模式');
+        // 這裡可以添加一些在退出全螢幕時需要執行的代碼
+    }
+}
 
+function exitFullscreen() {
+    if(document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if(document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+    } else if(document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    } else if(document.msExitFullscreen) {
+        document.msExitFullscreen();
+    }
+}
 
 shareButton.addEventListener('click', () => {
     const selectedType = questionType.value;
@@ -1435,6 +1476,9 @@ function startQuiz(q) {
 feedbackContainer.addEventListener('click', function() {
   feedbackContainer.classList.toggle('hiding2');
 });
+
+let currentQuestionAudio = null;
+let currentQuestionPlayAudio = null;
 
 // fn 出題
 function showQuestion() {
@@ -1533,7 +1577,7 @@ function showQuestion() {
     questionTextElement.className = 'question-text';
     let questionText = `${currentQuestionIndex + 1}. ${currentQuestion.question}`;
     questionText = questionText.replace(/{([^}]+)}/g, '🟢🟢');
-    questionTextElement.innerHTML = questionText; //here
+    questionTextElement.innerHTML = questionText;
     questionContainer.appendChild(questionTextElement);
 
     if (currentQuestion.img) {
@@ -1870,6 +1914,12 @@ function selectOption(index) {
 confirmButton.addEventListener('click', () => {
     if (!isConfirmed) {
         currentQuestion = myQuestions[currentQuestionIndex];
+
+        // 停止當前正在播放的音頻
+        if (currentQuestionAudio) {
+            currentQuestionAudio.pause();
+            currentQuestionAudio.currentTime = 0;
+        }
 
 		if (isGroupingQuestion(currentQuestion)) {
 		  handleGroupingConfirm(currentQuestion);
@@ -2275,6 +2325,7 @@ function restart() {
     elementsToShow.forEach(element => element.classList.remove('hidden'));
     
     initializeFromUrlParams();
+	exitFullscreen();
 }
 
 
