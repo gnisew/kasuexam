@@ -35,8 +35,8 @@
          <label for="order-type">排序:</label>
          <select id="order-type">
             <option value="category">分類序</option>
-            <option value="sequence">教材序</option>
-            <option value="random">隨機序</option>
+            <option value="sequence">原教材序</option>
+            <option value="random">隨機10題</option>
          </select>
       </div>
       <div id="category-selection" class="form-group">
@@ -1233,7 +1233,8 @@ questionType.addEventListener('change', () => {
             orderType.disabled = true;
             category.disabled = true;
         } else {
-            orderType.value = 'category';
+            //orderType.value = 'category';
+			orderType.value = 'random';
             populateCategoryOptions(selectedType);
         }
     } else {
@@ -1350,7 +1351,7 @@ startButton.addEventListener('click', () => {
         if (selectedOrder === 'sequence') {
             filteredQuestions.sort((a, b) => a.number - b.number);
         } else if (selectedOrder === 'random') {
-            filteredQuestions = startGetRandomQuestions(filteredQuestions);
+            filteredQuestions = getRandomQuestions(filteredQuestions);
         }
     }
 
@@ -1359,11 +1360,16 @@ startButton.addEventListener('click', () => {
 
 
 function startGetRandomQuestions(arr, n = arr.length) {
-    let result = new Array(n);
     let len = arr.length;
+    
+    // 如果選的題數大於題庫，則以題庫數
+    if (n > len) {
+        n = len;
+    }
+
+    let result = new Array(n);
     let taken = new Array(len);
-    if (n > len)
-        throw new RangeError("getRandomQuestions: more elements taken than available");
+
     while (n--) {
         let x = Math.floor(Math.random() * len);
         result[n] = arr[x in taken ? taken[x] : x];
@@ -1371,6 +1377,46 @@ function startGetRandomQuestions(arr, n = arr.length) {
     }
     return result;
 }
+
+
+function getRandomQuestions(questions) {
+    let stats = getQuestionStats();
+    let sortedQuestions = questions.map((q, index) => ({
+        question: q,
+        index: index,
+        incorrectCount: (stats[index] && stats[index].incorrect) || 0
+    }));
+    
+    let result = [];
+    let remainingQuestions = [...sortedQuestions];
+    let targetLength = Math.min(10, sortedQuestions.length);
+    
+    while (remainingQuestions.length > 0 && result.length < targetLength) {
+        // 選擇兩個隨機題目
+        for (let i = 0; i < 4 && remainingQuestions.length > 0 && result.length < targetLength; i++) {
+            let randomIndex = Math.floor(Math.random() * remainingQuestions.length);
+            result.push(remainingQuestions[randomIndex]);
+            remainingQuestions.splice(randomIndex, 1);
+        }
+        
+        // 選擇一個錯題（如果有的話）
+        if (remainingQuestions.length > 0 && result.length < targetLength) {
+            remainingQuestions.sort((a, b) => b.incorrectCount - a.incorrectCount);
+            result.push(remainingQuestions[0]);
+            remainingQuestions.splice(0, 1);
+        }
+    }
+    
+    return result.map(item => item.question);
+}
+
+
+
+
+
+
+
+
 
 
 // 監聽全螢幕變化事件
@@ -1383,21 +1429,20 @@ document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 function handleFullscreenChange() {
     if (!document.fullscreenElement && !document.webkitFullscreenElement &&
         !document.mozFullScreenElement && !document.msFullscreenElement) {
-        // 退出全螢幕時的處理邏輯
-        console.log('退出全螢幕模式');
-        // 這裡可以添加一些在退出全螢幕時需要執行的代碼
     }
 }
 
 function exitFullscreen() {
-    if(document.exitFullscreen) {
-        document.exitFullscreen();
-    } else if(document.mozCancelFullScreen) {
-        document.mozCancelFullScreen();
-    } else if(document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-    } else if(document.msExitFullscreen) {
-        document.msExitFullscreen();
+    if (document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+        if(document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if(document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if(document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if(document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
     }
 }
 
@@ -1903,13 +1948,7 @@ function createAudioOption(src) {
     return container;
 }
 
-function selectOption(index) {
-    selectedOptionIndex = index;
-    const options = optionsContainer.querySelectorAll('li');
-    options.forEach(option => option.classList.remove('selected'));
-    options[index].classList.add('selected');
-    confirmButton.disabled = false;
-}
+
 
 confirmButton.addEventListener('click', () => {
     if (!isConfirmed) {
@@ -1984,35 +2023,6 @@ function handleMatchingConfirm(question) {
     confirmButton.textContent = '繼續 ➡️';
 }
 
-function getRandomQuestions(questions) {
-    let stats = getQuestionStats();
-    let sortedQuestions = questions.map((q, index) => ({
-        question: q,
-        index: index,
-        incorrectCount: (stats[index] && stats[index].incorrect) || 0
-    }));
-    
-    let result = [];
-    let remainingQuestions = [...sortedQuestions];
-    
-    while (remainingQuestions.length > 0) {
-        // 選擇三個隨機題目
-        for (let i = 0; i < 2 && remainingQuestions.length > 0; i++) {
-            let randomIndex = Math.floor(Math.random() * remainingQuestions.length);
-            result.push(remainingQuestions[randomIndex]);
-            remainingQuestions.splice(randomIndex, 1);
-        }
-        
-        // 選擇一個錯題（如果有的話）
-        if (remainingQuestions.length > 0) {
-            remainingQuestions.sort((a, b) => b.incorrectCount - a.incorrectCount);
-            result.push(remainingQuestions[0]);
-            remainingQuestions.splice(0, 1);
-        }
-    }
-    
-    return result.map(item => item.question);
-}
 
 function logQuestionStats() {
     const stats = JSON.parse(localStorage.getItem('questionStats')) || {};
@@ -2127,13 +2137,14 @@ function displayHistory() {
     const historyContainer = document.querySelector('.history-container');
     const historyList = document.getElementById('history-list');
     const history = JSON.parse(localStorage.getItem('quizHistory')) || [];
+	
 
     if (history.length === 0) {
         historyContainer.classList.add('hidden');
     } else {
-        historyContainer.classList.remove('hidden');
 
-        historyList.innerHTML = history.map((item, index) => `
+        historyContainer.classList.remove('hidden');
+        historyList.innerHTML = history.map((item, index) => `		
             <div class="history-item" data-index="${index}">
                 <span class="delete-icon material-icons">close</span>
                 <span class="history-date">${item.date}</span>
@@ -2306,6 +2317,15 @@ restartButton.addEventListener('click', () => {
 });
 
 function restart() {
+    // 停止當前正在播放的音頻
+    if (currentQuestionAudio) {
+        currentQuestionAudio.pause();
+        currentQuestionAudio.currentTime = 0;
+    }
+
+    // 停止所有可能正在播放的音頻
+    stopAllAudio();
+
     const elementsToHide = [// 要隱藏的;	
         quizContainer, 
         progressBarContainer, 
@@ -2328,6 +2348,31 @@ function restart() {
 	exitFullscreen();
 }
 
+
+function stopAllAudio() {
+    // 停止主要問題音頻
+    if (currentQuestionAudio) {
+        currentQuestionAudio.pause();
+        currentQuestionAudio.currentTime = 0;
+    }
+
+    // 停止所有選項音頻（如果有的話）
+    const allAudioElements = document.querySelectorAll('audio');
+    allAudioElements.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+
+    // 重置所有播放按鈕的狀態
+    const allPlayButtons = document.querySelectorAll('.play-button, .question-audio-button');
+    allPlayButtons.forEach(button => {
+        button.classList.remove('playing');
+    });
+
+    // 重置全局播放狀態
+    currentlyPlayingAudio = null;
+    currentlyPlayingButton = null;
+}
 
 
 
@@ -2368,21 +2413,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeFromUrlParams();
     displayHistory();
     importQuestionStats();
-
-    document.getElementById('clear-history').addEventListener('click', () => {
-        if (confirm('確定要清除所有歷史記錄嗎？')) {
-            localStorage.removeItem('quizHistory');
-            displayHistory();
-        }
-    });
-
-    document.getElementById('clear-questionStats').addEventListener('click', () => {
-        if (confirm('確定要清除所有題目統計數據嗎？這個操作無法撤銷。')) {
-            localStorage.removeItem('questionStats');
-            logQuestionStats();
-        }
-    });
-
     shareQuestionStats.addEventListener('click', shareQuestionStatsFn);
 });
 
@@ -2635,9 +2665,10 @@ function handleSortingConfirm(question) {
 
 
 
-// 顯示普通題目
-function showNormalQuestion(currentQuestion) {
+// 顯示普通題目 here
+let lastSelectedIndex = null;
 
+function showNormalQuestion(currentQuestion) {
     optionsContainer.innerHTML = '';
     const hasMediaOptions = detectMediaInOptions(currentQuestion.options);
     optionsContainer.className = hasMediaOptions ? 'options grid-options' : 'options';
@@ -2654,10 +2685,32 @@ function showNormalQuestion(currentQuestion) {
             } else {
                 li.textContent = option;
             }
-            li.addEventListener('click', () => selectOption(index));
+            li.addEventListener('click', () => handleOptionClick(index));
             optionsContainer.appendChild(li);
         }
     });
+
+    // 重置上一次選擇的索引
+    lastSelectedIndex = null;
+}
+
+function handleOptionClick(index) {
+    if (index === lastSelectedIndex) {
+        // 如果點擊的是已選中的選項，觸發 confirmButton 點擊事件
+        confirmButton.click();
+    } else {
+        // 否則，選中新的選項
+        selectOption(index);
+    }
+}
+
+function selectOption(index) {
+    selectedOptionIndex = index;
+    lastSelectedIndex = index;
+    const options = optionsContainer.querySelectorAll('li');
+    options.forEach(option => option.classList.remove('selected'));
+    options[index].classList.add('selected');
+    confirmButton.disabled = false;
 }
 
 
