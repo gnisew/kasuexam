@@ -1,115 +1,3 @@
-const htmlTemplate = `
-<div class="container">
-   <div id="top-controls" class="top-controls">
-      <span id="start-again-button" class="hidden">X</span>
-      <span id="progress-bar-container" class="hidden">
-         <div id="progress-bar"></div>
-      </span>
-	  <span id="sound-button" class="hidden" title = '禁用音效'>🔔</span>
-      <span id="share-button" class="share-button hidden" title="分享">🔗</span>
-      <span id="home-button" class="home-button hidden" title="恢復設定">🏠</span>	
-   </div>
-   <div id="settings-container">
-      <div id="game-logo" class="logo">😺</div>
-      <div class="quiz-title">測驗學習遊戲</div>
-      <div class="form-group">
-         <label for="question-type">題型:</label>
-         <select id="question-type">
-            <option value="" disabled selected>請選題型</option>
-            <option value="mock">模擬</option>
-         </select>
-      </div>
-      <div class="form-group">
-         <label for="order-type">排序:</label>
-         <select id="order-type">
-            <option value="category">分類序</option>
-            <option value="sequence">原教材序</option>
-            <option value="random">隨機10題</option>
-         </select>
-      </div>
-      <div id="category-selection" class="form-group">
-         <label for="category">類別:</label>
-         <select id="category">
-            <!-- 動態生成的類別選項 -->
-         </select>
-      </div>
-      <button id="start-button">開始</button>	
-   </div>
-
-	<div id="quiz-container" class="hidden">
-
-	  <div id="question-container"></div>
-
-	  <ul id="options-container" class="options hidden"></ul>
-	  <div id="sorting-container" class="sorting-container hidden">
-		<div id="answer-area" class="answer-area"></div>
-		<div id="word-bank" class="word-bank"></div>
-		<button id="reset-sorting" class="reset-sorting" disabled>重置</button>
-	  </div>
-
-	  <div id="matching-container" class="matching-container hidden">
-	  </div>
-
-	<div id="arranging-container" class="arranging-container hidden">
-	<div class="arranging-dropzone"></div>
-	  <div class="arranging-items"></div>  
-	</div>
-
-	<div id="grouping-container" class="grouping-container hidden"></div>
-
-	  <div id="feedback-container" class="feedback"></div>
-
-	  <button id="confirm-button" class="confirm-button" disabled>確定</button>
-	</div>
-
-   <div id="end-screen" class="hidden">
-      <div id="result-icon" class="result-icon">🎊</div>
-      <div class="result-info">
-         <div class="quiz-info"></div>
-         <div class="score-stars"></div>
-      </div>
-      <button id="restart-button">再玩一次</button>
-      <div class="history-container">
-         <h3>😽😸😿</h3>
-         <div id="history-list"></div>
-         <button id="clear-history">清除紀錄</button>
-		 <button id="clear-questionStats" class="hidden">清除數據</button>
-		 <button id="share-questionStats" class="hidden">傳遞數據</button>
-      </div>
-   </div>
-</div>
-`;
-
-
-
-
-//載入 holowav 與 kasuMp3
-//loadCssJs('snd.js');
-
-//載入
-loadCssJs('https://oikasu1.github.io/kasuexam/kasu/styles.css');
-loadCssJs('https://oikasu1.github.io/kasuexam/kasu/fonts/twhei.css');
-loadCssJs('https://fonts.googleapis.com/icon?family=Material+Icons');
-
-function loadCssJs(url) {
-    const extension = url.split('.').pop().toLowerCase();
-    if (extension === 'js') {
-        const scriptElement = document.createElement('script');
-        scriptElement.src = url;
-        document.body.appendChild(scriptElement);
-    } else if (extension === 'css' || url.includes('fonts.googleapis.com')) {
-        const linkElement = document.createElement('link');
-        linkElement.rel = 'stylesheet';
-        linkElement.href = url;
-        document.head.appendChild(linkElement);
-    } else {
-        console.error('Unsupported file type or URL.');
-    }
-}
-
-
-// 將 HTML 模板插入到文檔中
-document.body.innerHTML += htmlTemplate;
 
 const questions = dataText.trim().split('\n').slice(1).map(line => {
     const [type, number, question, correct, a, b, c, d, img, audio, category, correctFeedback, wrongFeedback, id] = line.split('\t');
@@ -232,8 +120,8 @@ questionType.addEventListener('change', () => {
             orderType.disabled = true;
             category.disabled = true;
         } else {
-            //orderType.value = 'category';
-			orderType.value = 'random';
+            //orderType.value = 'random';
+			orderType.value = 'category'; // 題目預設排序
             populateCategoryOptions(selectedType);
         }
     } else {
@@ -523,24 +411,26 @@ function showQuestion() {
         
         currentQuestionAudio = audio;
         currentQuestionPlayAudio = playAudio;
+
+		let autoPlayButton = document.querySelector('.auto-play-button');
+		if (!autoPlayButton) {
+			autoPlayButton = document.createElement('button');
+			autoPlayButton.className = 'auto-play-button';
+			autoPlayButton.addEventListener('click', toggleAutoPlay);
+		}
+
+		autoPlayButton.classList.toggle('active', isAutoPlayDisabled);
+		autoPlayButton.textContent = isAutoPlayDisabled ? '🖐️' : '👈';
+		autoPlayButton.title = isAutoPlayDisabled ? '啟用自動播放' : '取消自動播放';
+
+		bubbleContainer.appendChild(autoPlayButton);
     }
 
     audioControlsContainer.appendChild(bubbleContainer);
 
     questionContainer.appendChild(audioControlsContainer);
 
-    let autoPlayButton = document.querySelector('.auto-play-button');
-    if (!autoPlayButton) {
-        autoPlayButton = document.createElement('button');
-        autoPlayButton.className = 'auto-play-button';
-        autoPlayButton.addEventListener('click', toggleAutoPlay);
-    }
 
-    autoPlayButton.classList.toggle('active', isAutoPlayDisabled);
-    autoPlayButton.textContent = isAutoPlayDisabled ? '🖐️' : '👈';
-    autoPlayButton.title = isAutoPlayDisabled ? '啟用自動播放' : '取消自動播放';
-
-    bubbleContainer.appendChild(autoPlayButton);
 
     const toggleButton = document.createElement('button');
     toggleButton.className = 'toggle-question-text';
@@ -621,9 +511,20 @@ function showMatchingQuestion(question) {
     const leftColumn = matchingContainer.querySelector('.matching-left');
     const rightColumn = matchingContainer.querySelector('.matching-right');
 
+/*
     const pairs = question.options.filter(option => option.includes('|') || option.includes('\\') || option.includes(';') || option.includes('='))
   .map(option => option.split(/[|;=\\]/).map(word => word.trim()));
-    
+*/
+
+	const pairs = question.options
+	  .flatMap(option => option.split(/\s+|;/)
+		.filter(pair => pair.trim() !== '')
+		.map(pair => pair.split(/[|\\=]/).map(word => word.trim()))
+		.filter(pair => pair.length === 2 && pair.every(word => word !== ''))
+	  );
+
+
+		
     // 建立正確配對的映射
     correctPairs = Object.fromEntries(pairs);
 
@@ -901,6 +802,7 @@ confirmButton.addEventListener('click', () => {
             handleSortingConfirm(currentQuestion);
         } else if (isMatchingQuestion(currentQuestion)) {
             handleMatchingConfirm(currentQuestion);
+			console.log(currentQuestion)
         } else {
             handleNormalConfirm(currentQuestion);
         }
@@ -925,10 +827,18 @@ let matchQuestionLength = 0;
 // fn配對計分
 function handleMatchingConfirm(question) {
     const matchedItems = document.querySelectorAll('.matching-item.matched');
-	matchQuestionLength = matchQuestionLength + question.options.length -1; //配對題數 -1;
+	const pairs = question.options
+	  .flatMap(option => option.split(/\s+|;/)
+		.filter(pair => pair.trim() !== '')
+		.map(pair => pair.split(/[|\\=]/).map(word => word.trim()))
+		.filter(pair => pair.length === 2 && pair.every(word => word !== ''))
+	  );
+	matchQuestionLength = matchQuestionLength + pairs.length -1; //配對題數 -1;
 
-    const isCorrect = matchedItems.length === question.options.length * 2;
-	const isCorrectMatch = matchCorrectLength === question.options.length;
+
+
+    const isCorrect = matchedItems.length === pairs.length * 2;
+	const isCorrectMatch = matchCorrectLength === pairs.length;
 
     updateQuestionStats(question.id, isCorrectMatch);
 
@@ -1337,7 +1247,7 @@ function initializeFromUrlParams() {
             orderType.value = ''; // 清空選擇
         } else {
             orderType.disabled = false;
-            orderType.value = 'category'; // 預設為分類序
+            orderType.value = 'category';
             populateCategoryOptions(questionType.value);
             if (order) {
                 orderType.value = Object.keys(orderMapping).find(key => orderMapping[key] == order);
@@ -1725,9 +1635,12 @@ function showArrangingQuestion(question) {
   const dropzone = arrangingContainer.querySelector('.arranging-dropzone');
   itemsContainer.innerHTML = '';
   dropzone.innerHTML = '';
+
   // 解析選項
-  let options = question.options.flatMap(option => option.split('|'));
-  
+  let options = question.options
+  .flatMap(option => option.split('|'))
+  .filter(option => option.trim() !== '');
+
   // 隨機打亂選項順序
   options = options.sort(() => Math.random() - 0.5);
   options.forEach((option, index) => {
@@ -1826,7 +1739,12 @@ function handleArrangingConfirm(question) {
     const userAnswer = Array.from(dropzone.children).map(item => {
         return item.textContent.replace(/^[①②③④⑤⑥⑦⑧⑨⑩]\s*/, '');
     });
-    const correctAnswer = question.options.flatMap(option => option.split('|'));
+
+  let correctAnswer = question.options
+  .flatMap(option => option.split('|'))
+  .filter(option => option.trim() !== '');
+
+
     const isCorrect = JSON.stringify(userAnswer) === JSON.stringify(correctAnswer);
     updateQuestionStats(question.id, isCorrect);
     if (isCorrect) {
@@ -1902,11 +1820,21 @@ function showGroupingQuestion(question) {
   groupingContainer.innerHTML = '';
   groupingContainer.style.display = 'flex';
 
+/*
   const groups = question.options.filter(option => option.includes(':'));
   const allItems = groups.flatMap(group => {
     const [groupName, itemsStr] = group.split(/:|：/);
     return itemsStr.split(/;|；/).map(item => ({ group: groupName, item: item.trim() }));
   });
+*/
+
+  const groups = question.options.filter(option => /[:：|]/.test(option));
+  const allItems = groups.flatMap(group => {
+    const [groupName, itemsStr] = group.split(/[:：]/);
+    return itemsStr.split(/[;；|]/).map(item => ({ group: groupName.trim(), item: item.trim() }));
+  });
+
+
 
   groupingallItemsLength = groupingallItemsLength + allItems.length; //加到總題數;
   groupingItemsLength = allItems.length; // 用於算單題得分;
@@ -1918,7 +1846,7 @@ function showGroupingQuestion(question) {
 
   // 創建所有組
   groups.forEach(group => {
-    const [groupName] = group.split(/:|：/);
+    const [groupName] = group.split(/[:：]/);
     const groupElement = document.createElement('div');
     groupElement.className = 'group';
     groupElement.innerHTML = `
@@ -1970,8 +1898,8 @@ function showGroupingQuestion(question) {
 
 function isDistributionCorrect(groups, groupContainers) {
   return groups.every((group, index) => {
-    const [groupName, itemsStr] = group.split(/:|：/);
-    const correctItems = itemsStr.split(/;|；/).map(item => item.trim());
+    const [groupName, itemsStr] = group.split(/[:：]/);
+    const correctItems = itemsStr.split(/[;；|]/).map(item => item.trim());
     const currentItems = Array.from(groupContainers[index].querySelectorAll('.item-text')).map(item => item.textContent.trim());
     return correctItems.length === currentItems.length && correctItems.every(item => currentItems.includes(item));
   });
@@ -2241,7 +2169,7 @@ function handleGroupingConfirm(question) {
 
     const correctGroup = question.options.find(option => option.startsWith(groupName));
     if (correctGroup) {
-      const correctItems = correctGroup.split(/:|：/)[1].split(/;|；/).map(item => item.trim());
+      const correctItems = correctGroup.split(/[:：]/)[1].split(/[;；|]/).map(item => item.trim());
       if (!items.every(item => correctItems.includes(item)) || items.length !== correctItems.length) {
         isCorrect = false;
       }

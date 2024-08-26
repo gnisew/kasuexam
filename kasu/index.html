@@ -1590,24 +1590,27 @@ function showQuestion() {
         
         currentQuestionAudio = audio;
         currentQuestionPlayAudio = playAudio;
+
+		let autoPlayButton = document.querySelector('.auto-play-button');
+		if (!autoPlayButton) {
+			autoPlayButton = document.createElement('button');
+			autoPlayButton.className = 'auto-play-button';
+			autoPlayButton.addEventListener('click', toggleAutoPlay);
+		}
+
+		autoPlayButton.classList.toggle('active', isAutoPlayDisabled);
+		autoPlayButton.textContent = isAutoPlayDisabled ? '🖐️' : '👈';
+		autoPlayButton.title = isAutoPlayDisabled ? '啟用自動播放' : '取消自動播放';
+
+		bubbleContainer.appendChild(autoPlayButton);
+
     }
 
     audioControlsContainer.appendChild(bubbleContainer);
 
     questionContainer.appendChild(audioControlsContainer);
 
-    let autoPlayButton = document.querySelector('.auto-play-button');
-    if (!autoPlayButton) {
-        autoPlayButton = document.createElement('button');
-        autoPlayButton.className = 'auto-play-button';
-        autoPlayButton.addEventListener('click', toggleAutoPlay);
-    }
 
-    autoPlayButton.classList.toggle('active', isAutoPlayDisabled);
-    autoPlayButton.textContent = isAutoPlayDisabled ? '🖐️' : '👈';
-    autoPlayButton.title = isAutoPlayDisabled ? '啟用自動播放' : '取消自動播放';
-
-    bubbleContainer.appendChild(autoPlayButton);
 
     const toggleButton = document.createElement('button');
     toggleButton.className = 'toggle-question-text';
@@ -1688,8 +1691,12 @@ function showMatchingQuestion(question) {
     const leftColumn = matchingContainer.querySelector('.matching-left');
     const rightColumn = matchingContainer.querySelector('.matching-right');
 
-    const pairs = question.options.filter(option => option.includes('|') || option.includes('\\') || option.includes(';') || option.includes('='))
-  .map(option => option.split(/[|;=\\]/).map(word => word.trim()));
+	const pairs = question.options
+	  .flatMap(option => option.split(/\s+|;/)
+		.filter(pair => pair.trim() !== '')
+		.map(pair => pair.split(/[|\\=]/).map(word => word.trim()))
+		.filter(pair => pair.length === 2 && pair.every(word => word !== ''))
+	  );
     
     // 建立正確配對的映射
     correctPairs = Object.fromEntries(pairs);
@@ -1992,7 +1999,13 @@ let matchQuestionLength = 0;
 // fn配對計分
 function handleMatchingConfirm(question) {
     const matchedItems = document.querySelectorAll('.matching-item.matched');
-	matchQuestionLength = matchQuestionLength + question.options.length -1; //配對題數 -1;
+	const pairs = question.options
+	  .flatMap(option => option.split(/\s+|;/)
+		.filter(pair => pair.trim() !== '')
+		.map(pair => pair.split(/[|\\=]/).map(word => word.trim()))
+		.filter(pair => pair.length === 2 && pair.every(word => word !== ''))
+	  );
+	matchQuestionLength = matchQuestionLength + pairs.length -1; //配對題數 -1;
 
     const isCorrect = matchedItems.length === question.options.length * 2;
 	const isCorrectMatch = matchCorrectLength === question.options.length;
@@ -2778,7 +2791,9 @@ function showArrangingQuestion(question) {
   itemsContainer.innerHTML = '';
   dropzone.innerHTML = '';
   // 解析選項
-  let options = question.options.flatMap(option => option.split('|'));
+  let options = question.options
+  .flatMap(option => option.split('|'))
+  .filter(option => option.trim() !== '');
   
   // 隨機打亂選項順序
   options = options.sort(() => Math.random() - 0.5);
@@ -2878,7 +2893,9 @@ function handleArrangingConfirm(question) {
     const userAnswer = Array.from(dropzone.children).map(item => {
         return item.textContent.replace(/^[①②③④⑤⑥⑦⑧⑨⑩]\s*/, '');
     });
-    const correctAnswer = question.options.flatMap(option => option.split('|'));
+  let correctAnswer = question.options
+  .flatMap(option => option.split('|'))
+  .filter(option => option.trim() !== '');
     const isCorrect = JSON.stringify(userAnswer) === JSON.stringify(correctAnswer);
     updateQuestionStats(question.id, isCorrect);
     if (isCorrect) {
@@ -2954,11 +2971,14 @@ function showGroupingQuestion(question) {
   groupingContainer.innerHTML = '';
   groupingContainer.style.display = 'flex';
 
-  const groups = question.options.filter(option => option.includes(':'));
+
+  const groups = question.options.filter(option => /[:：|]/.test(option));
   const allItems = groups.flatMap(group => {
-    const [groupName, itemsStr] = group.split(/:|：/);
-    return itemsStr.split(/;|；/).map(item => ({ group: groupName, item: item.trim() }));
+    const [groupName, itemsStr] = group.split(/[:：]/);
+    return itemsStr.split(/[;；|]/).map(item => ({ group: groupName.trim(), item: item.trim() }));
   });
+
+
 
   groupingallItemsLength = groupingallItemsLength + allItems.length; //加到總題數;
   groupingItemsLength = allItems.length; // 用於算單題得分;
@@ -2970,7 +2990,7 @@ function showGroupingQuestion(question) {
 
   // 創建所有組
   groups.forEach(group => {
-    const [groupName] = group.split(/:|：/);
+    const [groupName] = group.split(/[:：]/);
     const groupElement = document.createElement('div');
     groupElement.className = 'group';
     groupElement.innerHTML = `
@@ -3022,8 +3042,8 @@ function showGroupingQuestion(question) {
 
 function isDistributionCorrect(groups, groupContainers) {
   return groups.every((group, index) => {
-    const [groupName, itemsStr] = group.split(/:|：/);
-    const correctItems = itemsStr.split(/;|；/).map(item => item.trim());
+    const [groupName, itemsStr] = group.split(/[:：]/);
+    const correctItems = itemsStr.split(/[;；|]/).map(item => item.trim());
     const currentItems = Array.from(groupContainers[index].querySelectorAll('.item-text')).map(item => item.textContent.trim());
     return correctItems.length === currentItems.length && correctItems.every(item => currentItems.includes(item));
   });
@@ -3293,7 +3313,7 @@ function handleGroupingConfirm(question) {
 
     const correctGroup = question.options.find(option => option.startsWith(groupName));
     if (correctGroup) {
-      const correctItems = correctGroup.split(/:|：/)[1].split(/;|；/).map(item => item.trim());
+      const correctItems = correctGroup.split(/[:：]/)[1].split(/[;；|]/).map(item => item.trim());
       if (!items.every(item => correctItems.includes(item)) || items.length !== correctItems.length) {
         isCorrect = false;
       }

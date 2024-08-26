@@ -6,7 +6,155 @@
     <title>測驗學習遊戲🎉</title>
 </head>
 <body>
-<script src="data.js"></script>
+
+
+
+<script>
+// 區塊 CSS
+//載入 holowav 與 kasuMp3
+//loadCssJs('snd.js');
+//載入https://oikasu1.github.io/kasuexam/kasu/
+loadCssJs('styles.css');
+
+
+// 區塊 HTML
+const _quizTitle = '測驗學習遊戲';
+const _soundButtonTitle = '禁用音效';
+const _shareButtonTitle = '分享';
+const _homeButtonTitle = '恢復設定';
+const _questionTypeLabel = '大關:';
+const _selectQuestionTypePrompt = '請選大關';
+const _mockOption = '模擬';
+const _orderTypeLabel = '排序:';
+const _categoryOrderOption = '分類序';
+const _sequenceOrderOption = '原序';
+const _randomOrderOption = '隨機10題';
+const _categoryLabel = '類別:';
+const _startButtonText = '開始';
+const _resetSortingButtonText = '重置';
+const _confirmButtonText = '確定';
+const _restartButtonText = '再玩一次';
+const _clearHistoryButtonText = '清除紀錄';
+const _clearQuestionStatsButtonText = '清除數據';
+const _shareQuestionStatsButtonText = '傳遞數據';
+
+const htmlTemplate = `
+<div class="container">
+   <div id="top-controls" class="top-controls">
+      <span id="start-again-button" class="hidden">X</span>
+      <span id="progress-bar-container" class="hidden">
+         <div id="progress-bar"></div>
+      </span>
+      <span id="sound-button" class="hidden" title="${_soundButtonTitle}">🔔</span>
+      <span id="share-button" class="share-button hidden" title="${_shareButtonTitle}">🔗</span>
+      <span id="home-button" class="home-button hidden" title="${_homeButtonTitle}">🏠</span>	
+   </div>
+   <div id="settings-container">
+      <div id="game-logo" class="logo">😺</div>
+      <div class="quiz-title">${_quizTitle}</div>
+      <div class="form-group">
+         <label for="question-type">${_questionTypeLabel}</label>
+         <select id="question-type">
+            <option value="" disabled selected>${_selectQuestionTypePrompt}</option>
+            <option value="mock">${_mockOption}</option>
+         </select>
+      </div>
+      <div class="form-group">
+         <label for="order-type">${_orderTypeLabel}</label>
+         <select id="order-type">
+            <option value="category">${_categoryOrderOption}</option>
+            <option value="sequence">${_sequenceOrderOption}</option>
+            <option value="random">${_randomOrderOption}</option>
+         </select>
+      </div>
+      <div id="category-selection" class="form-group">
+         <label for="category">${_categoryLabel}</label>
+         <select id="category">
+            <!-- 動態生成的類別選項 -->
+         </select>
+      </div>
+      <button id="start-button">${_startButtonText}</button>	
+   </div>
+   <div id="quiz-container" class="hidden">
+      <div id="question-container"></div>
+      <ul id="options-container" class="options hidden"></ul>
+      <div id="sorting-container" class="sorting-container hidden">
+         <div id="answer-area" class="answer-area"></div>
+         <div id="word-bank" class="word-bank"></div>
+         <button id="reset-sorting" class="reset-sorting" disabled>${_resetSortingButtonText}</button>
+      </div>
+      <div id="matching-container" class="matching-container hidden">
+      </div>
+      <div id="arranging-container" class="arranging-container hidden">
+         <div class="arranging-dropzone"></div>
+         <div class="arranging-items"></div>  
+      </div>
+      <div id="grouping-container" class="grouping-container hidden"></div>
+      <div id="feedback-container" class="feedback"></div>
+      <button id="confirm-button" class="confirm-button" disabled>${_confirmButtonText}</button>
+   </div>
+   <div id="end-screen" class="hidden">
+      <div id="result-icon" class="result-icon">🎊</div>
+      <div class="result-info">
+         <div class="quiz-info"></div>
+         <div class="score-stars"></div>
+      </div>
+      <button id="restart-button">${_restartButtonText}</button>
+      <div class="history-container">
+         <h3>😽😸😿</h3>
+         <div id="history-list"></div>
+         <button id="clear-history">${_clearHistoryButtonText}</button>
+         <button id="clear-questionStats" class="hidden">${_clearQuestionStatsButtonText}</button>
+         <button id="share-questionStats" class="hidden">${_shareQuestionStatsButtonText}</button>
+      </div>
+   </div>
+</div>
+`;
+
+// 將 HTML 模板插入到文檔中
+document.body.innerHTML += htmlTemplate;
+
+loadCssJs('https://oikasu1.github.io/kasuexam/kasu/fonts/twhei.css');
+loadCssJs('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+function loadCssJs(url) {
+    const extension = url.split('.').pop().toLowerCase();
+    if (extension === 'js') {
+        const scriptElement = document.createElement('script');
+        scriptElement.src = url;
+        document.body.appendChild(scriptElement);
+    } else if (extension === 'css' || url.includes('fonts.googleapis.com')) {
+        const linkElement = document.createElement('link');
+        linkElement.rel = 'stylesheet';
+        linkElement.href = url;
+        document.head.appendChild(linkElement);
+    } else {
+        console.error('Unsupported file type or URL.');
+    }
+}
+
+</script>
+
+
+
+
+
+
+
+<script>
+const dataText = `
+題型	序號	題目	正確	選項A	選項B	選項C	選項D	題目圖檔	題目音檔	類別標題	正確回饋	錯誤回饋	ID
+測試	7	文字說明07	配對	天|tian	時間|shijian	可以|keyi	如果|ruguo						7
+測試	8	文字說明08	配對	天|tian;時間|shijian;可以|keyi;如果|ruguo;不要|buyao									8
+`;
+</script>
+
+
+
+<script src="script.js"></script>
+<!--
+<script src="https://oikasu1.github.io/kasuexam/kasu/data.js"></script>
 <script src="https://oikasu1.github.io/kasuexam/kasu/script.js"></script>
+-->
 </body>
 </html>
