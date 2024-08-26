@@ -29,7 +29,7 @@ const _orderTypeLabel = '排序:';
 const _categoryOrderOption = '分類序';
 const _sequenceOrderOption = '原序';
 const _randomOrderOption = '隨機10題';
-const _categoryLabel = '類別:';
+const _categoryLabel = '小關:';
 const _startButtonText = '開始';
 const _resetSortingButtonText = '重置';
 const _confirmButtonText = '確定';
@@ -56,14 +56,14 @@ const htmlTemplate = `
          <label for="question-type">${_questionTypeLabel}</label>
          <select id="question-type">
             <option value="" disabled selected>${_selectQuestionTypePrompt}</option>
-            <option value="mock">${_mockOption}</option>
+           <!-- <option value="mock">${_mockOption}</option> -->
          </select>
       </div>
       <div class="form-group">
          <label for="order-type">${_orderTypeLabel}</label>
          <select id="order-type">
             <option value="category">${_categoryOrderOption}</option>
-            <option value="sequence">${_sequenceOrderOption}</option>
+            <!-- <option value="sequence">${_sequenceOrderOption}</option> -->
             <option value="random">${_randomOrderOption}</option>
          </select>
       </div>
